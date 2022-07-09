@@ -8,7 +8,7 @@ use std::sync::mpsc::channel;
 #[clap(
     name = "run-when",
     author = "Aalekh Patel", 
-    version = "1.0.0", 
+    version = "1.0.1", 
     about = "Run a (debounced) command upon changes to the filesystem.",
     long_about = None
 )]
@@ -49,7 +49,7 @@ fn main() -> Result<(), Error> {
     loop {
         match rx.recv() {
             Ok(_) => {
-                if let Err(e) = Command::new(args.command_file.clone()).spawn() {
+                if let Err(e) = Command::new(args.command_file.clone()).output() {
                     eprintln!(
                         "Error occurred when command {:?} was executed: {:?}",
                         e, &args.command_file
