@@ -3,12 +3,12 @@ use std::sync::mpsc::channel;
 use clap::Parser;
 use anyhow::Error;
 use std::process::Command;
-use parse_duration;
 
 #[derive(Parser, Debug)]
 #[clap(
+    name = "run-when",
     author = "Aalekh Patel", 
-    version = "0.1.0", 
+    version = "1.0.0", 
     about = "Run a (debounced) command upon changes to the filesystem.",
     long_about = None
 )]
