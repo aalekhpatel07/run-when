@@ -3,12 +3,14 @@ use clap::Parser;
 use notify::{watcher, RecursiveMode, Watcher};
 use std::process::Command;
 use std::sync::mpsc::channel;
+use log::{info, error};
+use simple_logger::SimpleLogger;
 
 #[derive(Parser, Debug)]
 #[clap(
     name = "run-when",
     author = "Aalekh Patel", 
-    version = "1.0.2", 
+    version = "1.0.3", 
     about = "Run a (debounced) command upon changes to the filesystem.",
     long_about = None
 )]
@@ -32,6 +34,8 @@ pub struct Args {
 
 /// The main function.
 fn main() -> Result<(), Error> {
+
+    SimpleLogger::new().init().unwrap();
     let args = Args::parse();
     let duration = parse_duration::parse(&args.debounce_period)?;
 
@@ -48,18 +52,29 @@ fn main() -> Result<(), Error> {
 
     loop {
         match rx.recv() {
-            Ok(_) => {
-                if let Err(e) = Command::new(args.command_file.clone()).output() {
-                    eprintln!(
-                        "Error occurred when command {:?} was executed: {:?}",
+            Ok(_) => match Command::new(args.command_file.clone()).output() {
+                Ok(output) => {
+                    info!(
+                        "Changes detected in {:#?}. Running '{:#?}'",
+                        args.file.clone(),
+                        args.command_file.clone()
+                    );
+                    
+                    let stdout = String::from_utf8(output.stdout.clone())?;
+                    let stderr = String::from_utf8(output.stderr.clone())?;
+
+                    info!("Stdout: {:#?}", stdout);
+                    info!("Stderr: {:#?}", stderr);
+                }
+                Err(e) => {
+                    error!(
+                        "Error occurred when command {:#?} was executed: {:#?}",
                         e, &args.command_file
                     );
-                } else {
-                    println!("Changes detected in {:?}. Running '{:?}'", args.file.clone(), args.command_file.clone());
                 }
-            }
+            },
             Err(e) => {
-                eprintln!("Failed to watch {e:?}");
+                error!("Failed to watch {e:#?}");
             }
         }
     }
