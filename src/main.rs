@@ -8,7 +8,7 @@ use std::sync::mpsc::channel;
 #[clap(
     name = "run-when",
     author = "Aalekh Patel", 
-    version = "1.0.1", 
+    version = "1.0.2", 
     about = "Run a (debounced) command upon changes to the filesystem.",
     long_about = None
 )]
@@ -54,6 +54,8 @@ fn main() -> Result<(), Error> {
                         "Error occurred when command {:?} was executed: {:?}",
                         e, &args.command_file
                     );
+                } else {
+                    println!("Changes detected in {:?}. Running '{:?}'", args.file.clone(), args.command_file.clone());
                 }
             }
             Err(e) => {
